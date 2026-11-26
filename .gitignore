@@ -1,0 +1,9 @@
+paypilot-backend/target/
+paypilot-backend/.idea/
+paypilot-backend/*.iml
+paypilot-backend/.mvn/
+paypilot-frontend/node_modules/
+paypilot-frontend/dist/
+paypilot-frontend/.angular/
+.DS_Store
+*.env
