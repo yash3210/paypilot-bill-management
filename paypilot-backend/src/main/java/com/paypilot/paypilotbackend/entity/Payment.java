@@ -19,6 +19,10 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "bill_id")
+    private Bill bill;
+
     @Column(nullable = false, unique = true)
     private String transactionRef;
 
@@ -55,4 +59,8 @@ public class Payment {
             this.status = "SUCCESS";
         }
     }
+
+    private String payerAccountNumber;
+    public String getPayerAccountNumber() { return payerAccountNumber; }
+    public void setPayerAccountNumber(String payerAccountNumber) { this.payerAccountNumber = payerAccountNumber; }
 }

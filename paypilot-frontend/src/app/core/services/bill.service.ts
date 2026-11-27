@@ -1,72 +1,71 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
-import { Bill, CreateBillRequest } from '../models/bill.model';
+import { Observable } from 'rxjs';
+import { Bill, Payment, ScheduledPayment, ReminderSetting, UserProfile } from '../models/bill.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class BillService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/bills';
+  private http = inject(HttpClient);
+  private apiUrl = 'http://localhost:8080/api';
 
-  private readonly billsSignal = signal<Bill[]>([]);
-  readonly loading = signal<boolean>(false);
-
-  readonly bills = this.billsSignal.asReadonly();
-
-  readonly totalPendingAmount = computed(() =>
-    this.billsSignal()
-      .filter((b) => b.status === 'PENDING' || b.status === 'OVERDUE')
-      .reduce((sum, b) => sum + Number(b.amount), 0)
-  );
-
-  readonly totalPaidAmount = computed(() =>
-    this.billsSignal()
-      .filter((b) => b.status === 'PAID')
-      .reduce((sum, b) => sum + Number(b.amount), 0)
-  );
-
-  readonly pendingCount = computed(() =>
-    this.billsSignal().filter((b) => b.status === 'PENDING' || b.status === 'OVERDUE').length
-  );
-
-  loadBills(): void {
-    this.loading.set(true);
-    this.http.get<Bill[]>(this.apiUrl).subscribe({
-      next: (data) => {
-        this.billsSignal.set(data);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
-    });
+  // Bills
+  getBills(): Observable<Bill[]> {
+    return this.http.get<Bill[]>(`${this.apiUrl}/bills`);
   }
-
-  createBill(payload: CreateBillRequest): Observable<Bill> {
-    return this.http.post<Bill>(this.apiUrl, payload).pipe(
-      tap((created) => {
-        this.billsSignal.update((list) =>
-          [...list, created].sort((a, b) => a.dueDate.localeCompare(b.dueDate))
-        );
-      })
-    );
+  createBill(payload: Partial<Bill>): Observable<Bill> {
+    return this.http.post<Bill>(`${this.apiUrl}/bills`, payload);
   }
-
+  updateBill(id: number, payload: Partial<Bill>): Observable<Bill> {
+    return this.http.put<Bill>(`${this.apiUrl}/bills/${id}`, payload);
+  }
+  snoozeBill(id: number, snoozedUntil: string): Observable<Bill> {
+    return this.http.patch<Bill>(`${this.apiUrl}/bills/${id}/snooze`, { snoozedUntil });
+  }
   markAsPaid(id: number): Observable<Bill> {
-    return this.http.patch<Bill>(`${this.apiUrl}/${id}/pay`, {}).pipe(
-      tap((updated) => {
-        this.billsSignal.update((list) =>
-          list.map((b) => (b.id === id ? updated : b))
-        );
-      })
-    );
+    return this.http.patch<Bill>(`${this.apiUrl}/bills/${id}/mark-paid`, {});
+  }
+  deleteBill(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/bills/${id}`);
   }
 
-  deleteBill(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-      tap(() => {
-        this.billsSignal.update((list) => list.filter((b) => b.id !== id));
-      })
-    );
+  // Payments (Full & Partial)
+  getPayments(): Observable<Payment[]> {
+    return this.http.get<Payment[]>(`${this.apiUrl}/payments`);
+  }
+  payBill(payload: { billId: number; amount: number; paymentMethod: string; payerAccountNumber?: string }): Observable<Payment> {
+    return this.http.post<Payment>(`${this.apiUrl}/payments`, payload);
+  }
+
+  // Scheduled Payments
+  getSchedules(): Observable<ScheduledPayment[]> {
+    return this.http.get<ScheduledPayment[]>(`${this.apiUrl}/schedules`);
+  }
+  createSchedule(payload: any): Observable<ScheduledPayment> {
+    return this.http.post<ScheduledPayment>(`${this.apiUrl}/schedules`, payload);
+  }
+  modifySchedule(id: number, payload: { scheduledDate: string; paymentMode?: string }): Observable<ScheduledPayment> {
+    return this.http.put<ScheduledPayment>(`${this.apiUrl}/schedules/${id}`, payload);
+  }
+  cancelSchedule(id: number): Observable<ScheduledPayment> {
+    return this.http.patch<ScheduledPayment>(`${this.apiUrl}/schedules/${id}/cancel`, {});
+  }
+
+  // Reminder Settings
+  getReminders(): Observable<ReminderSetting[]> {
+    return this.http.get<ReminderSetting[]>(`${this.apiUrl}/reminders`);
+  }
+  saveReminder(payload: any): Observable<ReminderSetting> {
+    return this.http.post<ReminderSetting>(`${this.apiUrl}/reminders`, payload);
+  }
+
+  // Profile & Password Reset
+  getProfile(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/profile`);
+  }
+  updateProfile(payload: Partial<UserProfile>): Observable<UserProfile> {
+    return this.http.put<UserProfile>(`${this.apiUrl}/profile`, payload);
+  }
+  resetPassword(email: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/reset-password`, { email, newPassword });
   }
 }

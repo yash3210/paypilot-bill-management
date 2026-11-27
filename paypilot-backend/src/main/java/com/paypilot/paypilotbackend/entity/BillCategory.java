@@ -2,11 +2,17 @@ package com.paypilot.paypilotbackend.entity;
 
 public enum BillCategory {
     ELECTRICITY,
-    INTERNET,
     WATER,
-    CREDIT_CARD,
-    INSURANCE,
-    MOBILE,
+    INTERNET,
     RENT,
+    HOUSE_RENT,
+    MOBILE,
+    CELLPHONE_CHARGES,
+    CREDIT_CARD,
+    DEBT_PAYMENTS,
+    GROCERIES,
+    INSURANCE,
+    SUBSCRIPTIONS,
+    RETIREMENT_SAVINGS,
     OTHER
 }
