@@ -66,4 +66,19 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() { return true; }
+
+    private String panDetails;
+    private String bankAccountNumber;
+    private String ifscCode;
+    private String bankingPartner;
+
+    public String getPanDetails() { return panDetails; }
+    public void setPanDetails(String panDetails) { this.panDetails = panDetails; }
+    public String getBankAccountNumber() { return bankAccountNumber; }
+    public void setBankAccountNumber(String bankAccountNumber) { this.bankAccountNumber = bankAccountNumber; }
+    public String getIfscCode() { return ifscCode; }
+    public void setIfscCode(String ifscCode) { this.ifscCode = ifscCode; }
+    public String getBankingPartner() { return bankingPartner; }
+    public void setBankingPartner(String bankingPartner) { this.bankingPartner = bankingPartner; }
+
 }
