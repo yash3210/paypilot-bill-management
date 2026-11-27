@@ -1,0 +1,5 @@
+**/package-lock.json linguist-vendored
+**/mvnw linguist-vendored
+**/mvnw.cmd linguist-vendored
+*.html linguist-detectable=false
+*.css linguist-detectable=false
